@@ -1,0 +1,67 @@
+// File ini berjalan di SERVER Vercel
+// User TIDAK BISA melihat isi file ini sama sekali
+
+const dataNilai = {
+  "F1D022149":   { nama: "NABILA AZKIYA ROSYIDA WIJAYANTI", nilai: 60 },
+  "F1D02310010": { nama: "I NYOMAN SUDARSANA", nilai: 70 },
+  "F1D02310012": { nama: "KHOLIQ MITRA RAHARJA", nilai: 55 },
+  "F1D02310024": { nama: "ROMAN IBRAHIMA ARCHISAPPE CHARENI", nilai: 47 },
+  "F1D02310053": { nama: "GIAN KAUSARI", nilai: 60 },
+  "F1D02310056": { nama: "I MADE INDRA DWI PAYANA", nilai: 70 },
+  "F1D02310067": { nama: "KEVIN MUAMMAR GATHFAN", nilai: 50 },
+  "F1D02310074": { nama: "M. RIZKI JUNIARDI", nilai: 60 },
+  "F1D02510015": { nama: "MICHEL ISKANDAR", nilai: 75 },
+  "F1D02510034": { nama: "AGNI HUMAIRA", nilai: 45 },
+  "F1D02510038": { nama: "ANAS AMRULLAH KHAERON", nilai: 50 },
+  "F1D02510040": { nama: "AZZAHRA SHAFIRA RACHMAN", nilai: 60 },
+  "F1D02510043": { nama: "BAYU KHALDUN ARDIANSYAH", nilai: 40 },
+  "F1D02510044": { nama: "CAYLAZEFA GRACIA GETSEMANI ARIO", nilai: 70 },
+  "F1D02510047": { nama: "DAHLIA WAHYUNI", nilai: 65 },
+  "F1D02510050": { nama: "FAIZ GAIA NAJIB", nilai: 40 },
+  "F1D02510054": { nama: "I GUSTI AGUNG AYU PRISILIA", nilai: 60 },
+  "F1D02510055": { nama: "I KOMANG SATYA BAGUS TRIATNA", nilai: 70 },
+  "F1D02510061": { nama: "JOVANKA KIARA REVALIN SEPTYAVANYA", nilai: 65 },
+  "F1D02510065": { nama: "LALU AKHADI RIZKI", nilai: 60 },
+  "F1D02510067": { nama: "LALU MUHAMMAD IZZA ABDA MAULANA", nilai: 65 },
+  "F1D02510070": { nama: "M. PRADIFTA ARIZONA", nilai: 45 },
+  "F1D02510071": { nama: "MALIKAL HIRSYA ALFATORY", nilai: 55 },
+  "F1D02510072": { nama: "MAULANA ISNA ANDIKA", nilai: 40 },
+  "F1D02510076": { nama: "MOHAMMAD IVAN ANDITA", nilai: 60 },
+  "F1D02510082": { nama: "MUHAMMAD FEBRYAN SYACH FAHLEVI", nilai: 45 },
+  "F1D02510084": { nama: "MUHAMMAD SATRIA RAHMATUL ADHA", nilai: 50 },
+  "F1D02510087": { nama: "NISA AGNIA", nilai: 60 },
+  "F1D02510089": { nama: "RIFKA SALSABILA FUTRI", nilai: 90 },
+  "F1D02510096": { nama: "VIRGINIA SHERINA MARTHA PIRI", nilai: 80 },
+  "F1D02510097": { nama: "YARA DZAKIYATUL FITRIYAH", nilai: 50 },
+  "F1D02510100": { nama: "ZIDNY ILMA", nilai: 65 },
+  "F1D02510103": { nama: "AMANDA REZQUITA JAMILA", nilai: 80 },
+  "F1D02510108": { nama: "BIMA SATRIO KHOIRI ROMADHON", nilai: 50 },
+  "F1D02510109": { nama: "CHANDRA KUSUMA", nilai: 40 },
+  "F1D02510113": { nama: "FAUZAN ADHIM MUBARAK", nilai: 40 },
+  "F1D02510119": { nama: "LALU HELMI FIRDAUS", nilai: 50 },
+  "F1D02510120": { nama: "LALU M. SULTHAN AZMY", nilai: 40 },
+  "F1D02510125": { nama: "MUSHADDIK SYAKH AL KABIIRA", nilai: 20 },
+  "F1D02510128": { nama: "NATHAN CHRISTIAN LOILEWEN", nilai: 90 },
+  "F1D02511001": { nama: "Aijiazi Housaiyin", nilai: 45 }
+};
+
+export default function handler(req, res) {
+  const nim = (req.query.nim || '').toUpperCase().trim();
+
+  if (!nim) {
+    return res.status(400).json({ found: false, error: 'NIM kosong' });
+  }
+
+  const data = dataNilai[nim];
+
+  if (!data) {
+    return res.status(200).json({ found: false });
+  }
+
+  return res.status(200).json({
+    found: true,
+    nama: data.nama,
+    nilai: data.nilai,
+    lulus: data.nilai >= 65
+  });
+}

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cek Nilai Mahasiswa</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .container {
+    background: #fff; width: 100%; max-width: 480px;
+    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    padding: 40px 32px;
+  }
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .icon {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: #fff;
+  }
+  h1 { color: #2d3748; font-size: 24px; margin-bottom: 6px; }
+  .subtitle { color: #718096; font-size: 14px; }
+  .form-group { margin-bottom: 20px; }
+  label {
+    display: block; color: #4a5568; font-weight: 600;
+    margin-bottom: 8px; font-size: 14px;
+  }
+  input {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid #e2e8f0; border-radius: 10px;
+    font-size: 15px; transition: all 0.2s;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  input:focus {
+    outline: none; border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  }
+  button {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  button:hover { transform: translateY(-2px); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .result {
+    margin-top: 24px; padding: 20px; border-radius: 12px;
+    text-align: center; display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .result.show { display: block; }
+  .result.lulus {
+    background: linear-gradient(135deg, #d4f4dd, #a8e6b8);
+    border: 2px solid #38a169;
+  }
+  .result.remed {
+    background: linear-gradient(135deg, #fed7d7, #feb2b2);
+    border: 2px solid #e53e3e;
+  }
+  .result.error { background: #fefcbf; border: 2px solid #d69e2e; }
+  .result .emoji { font-size: 48px; margin-bottom: 10px; }
+  .result .name {
+    font-size: 16px; font-weight: 600;
+    color: #2d3748; margin-bottom: 4px;
+  }
+  .result .nilai { font-size: 32px; font-weight: 700; margin: 8px 0; }
+  .result.lulus .nilai { color: #22543d; }
+  .result.remed .nilai { color: #742a2a; }
+  .result .message { font-size: 16px; font-weight: 600; margin-top: 6px; }
+  .result.lulus .message { color: #22543d; }
+  .result.remed .message { color: #742a2a; }
+  .result.error .message { color: #744210; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .info {
+    margin-top: 20px; padding: 12px;
+    background: #f7fafc; border-radius: 8px;
+    font-size: 13px; color: #718096; text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">📊</div>
+      <h1>Cek Nilai Mahasiswa</h1>
+      <p class="subtitle">Masukkan NIM untuk melihat hasil nilai Anda</p>
+    </div>
+    <div class="form-group">
+      <label for="nim">Nomor Induk Mahasiswa (NIM)</label>
+      <input type="text" id="nim" placeholder="Contoh: F1D02510015" autocomplete="off">
+    </div>
+    <button id="btnCek" onclick="cekNilai()">Cek Nilai</button>
+    <div id="result" class="result"></div>
+    <div class="info">💡 Nilai minimal kelulusan: <strong>65</strong></div>
+  </div>
+
+<script>
+  async function cekNilai() {
+    const nim = document.getElementById('nim').value.trim().toUpperCase();
+    const resultDiv = document.getElementById('result');
+    const btn = document.getElementById('btnCek');
+    resultDiv.className = 'result';
+
+    if (!nim) {
+      resultDiv.classList.add('show', 'error');
+      resultDiv.innerHTML = '<div class="emoji">⚠️</div><div class="message">NIM tidak boleh kosong!</div>';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Memeriksa...';
+
+    try {
+      const res = await fetch('/api/cek?nim=' + encodeURIComponent(nim));
+      const data = await res.json();
+
+      if (!data.found) {
+        resultDiv.classList.add('show', 'error');
+        resultDiv.innerHTML = '<div class="emoji">❌</div><div class="message">NIM tidak ditemukan!</div>';
+      } else if (data.lulus) {
+        resultDiv.classList.add('show', 'lulus');
+        resultDiv.innerHTML =
+          '<div class="emoji">🎉</div>' +
+          '<div class="name">' + data.nama + '</div>' +
+          '<div class="nilai">' + data.nilai + '</div>' +
+          '<div class="message">Selamat, kamu tidak remed! 🎓</div>';
+      } else {
+        resultDiv.classList.add('show', 'remed');
+        resultDiv.innerHTML =
+          '<div class="emoji">😔</div>' +
+          '<div class="name">' + data.nama + '</div>' +
+          '<div class="nilai">' + data.nilai + '</div>' +
+          '<div class="message">Maaf, coba lagi yuk. Remed! 📚</div>';
+      }
+    } catch (err) {
+      resultDiv.classList.add('show', 'error');
+      resultDiv.innerHTML = '<div class="emoji">⚠️</div><div class="message">Terjadi kesalahan, coba lagi.</div>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Cek Nilai';
+    }
+  }
+
+  document.getElementById('nim').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') cekNilai();
+  });
+</script>
+</body>
+</html>
