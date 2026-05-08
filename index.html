@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cek Nilai Mahasiswa</title>
+<title>Student Grade Checker – Probability & Statistics</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex; align-items: center; justify-content: center;
@@ -36,7 +38,8 @@
   input[type="text"] {
     width: 100%; padding: 14px 16px;
     border: 2px solid #e2e8f0; border-radius: 10px;
-    font-size: 15px; transition: all 0.2s;
+    font-size: 15px; font-family: 'DM Mono', monospace;
+    transition: all 0.2s;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
   input[type="text"]:focus {
@@ -47,7 +50,8 @@
     width: 100%; padding: 14px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff; border: none; border-radius: 10px;
-    font-size: 16px; font-weight: 600; cursor: pointer;
+    font-size: 16px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
   }
   button:hover {
@@ -61,11 +65,11 @@
     animation: fadeIn 0.4s ease;
   }
   .result.show { display: block; }
-  .result.lulus {
+  .result.passed {
     background: linear-gradient(135deg, #d4f4dd, #a8e6b8);
     border: 2px solid #38a169;
   }
-  .result.remed {
+  .result.failed {
     background: linear-gradient(135deg, #fed7d7, #feb2b2);
     border: 2px solid #e53e3e;
   }
@@ -75,12 +79,12 @@
     font-size: 16px; font-weight: 600;
     color: #2d3748; margin-bottom: 4px;
   }
-  .result .nilai { font-size: 32px; font-weight: 700; margin: 8px 0; }
-  .result.lulus .nilai { color: #22543d; }
-  .result.remed .nilai { color: #742a2a; }
+  .result .score { font-size: 32px; font-weight: 700; margin: 8px 0; font-family: 'DM Mono', monospace; }
+  .result.passed .score { color: #22543d; }
+  .result.failed .score { color: #742a2a; }
   .result .message { font-size: 16px; font-weight: 600; margin-top: 6px; }
-  .result.lulus .message { color: #22543d; }
-  .result.remed .message { color: #742a2a; }
+  .result.passed .message { color: #22543d; }
+  .result.failed .message { color: #742a2a; }
   .result.error .message { color: #744210; }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
@@ -97,101 +101,101 @@
   <div class="container">
     <div class="header">
       <div class="icon">📊</div>
-      <h1>Cek Nilai Mahasiswa</h1>
-      <p class="subtitle">Masukkan NIM untuk melihat hasil nilai Anda</p>
+      <h1>Student Grade Checker</h1>
+      <p class="subtitle">Probability &amp; Statistics — Class A</p>
     </div>
     <div class="form-group">
-      <label for="nim">Nomor Induk Mahasiswa (NIM)</label>
-      <input type="text" id="nim" placeholder="Contoh: F1D02510015" autocomplete="off">
+      <label for="nim">Student ID Number (NIM)</label>
+      <input type="text" id="nim" placeholder="Example: F1D02510015" autocomplete="off">
     </div>
-    <button onclick="cekNilai()">Cek Nilai</button>
+    <button onclick="checkGrade()">Check Grade</button>
     <div id="result" class="result"></div>
-    <div class="info">💡 Nilai minimal kelulusan: <strong>65</strong></div>
+    <div class="info">💡 Minimum passing score: <strong>65</strong></div>
   </div>
 
 <script>
-  const dataNilai = {
-    "F1D022149":   { nama: "NABILA AZKIYA ROSYIDA WIJAYANTI", nilai: 60 },
-    "F1D02310010": { nama: "I NYOMAN SUDARSANA", nilai: 70 },
-    "F1D02310012": { nama: "KHOLIQ MITRA RAHARJA", nilai: 55 },
-    "F1D02310024": { nama: "ROMAN IBRAHIMA ARCHISAPPE CHARENI", nilai: 47 },
-    "F1D02310053": { nama: "GIAN KAUSARI", nilai: 60 },
-    "F1D02310056": { nama: "I MADE INDRA DWI PAYANA", nilai: 70 },
-    "F1D02310067": { nama: "KEVIN MUAMMAR GATHFAN", nilai: 50 },
-    "F1D02310074": { nama: "M. RIZKI JUNIARDI", nilai: 60 },
-    "F1D02510015": { nama: "MICHEL ISKANDAR", nilai: 75 },
-    "F1D02510034": { nama: "AGNI HUMAIRA", nilai: 45 },
-    "F1D02510038": { nama: "ANAS AMRULLAH KHAERON", nilai: 50 },
-    "F1D02510040": { nama: "AZZAHRA SHAFIRA RACHMAN", nilai: 60 },
-    "F1D02510043": { nama: "BAYU KHALDUN ARDIANSYAH", nilai: 40 },
-    "F1D02510044": { nama: "CAYLAZEFA GRACIA GETSEMANI ARIO", nilai: 70 },
-    "F1D02510047": { nama: "DAHLIA WAHYUNI", nilai: 65 },
-    "F1D02510050": { nama: "FAIZ GAIA NAJIB", nilai: 40 },
-    "F1D02510054": { nama: "I GUSTI AGUNG AYU PRISILIA", nilai: 60 },
-    "F1D02510055": { nama: "I KOMANG SATYA BAGUS TRIATNA", nilai: 70 },
-    "F1D02510061": { nama: "JOVANKA KIARA REVALIN SEPTYAVANYA", nilai: 65 },
-    "F1D02510065": { nama: "LALU AKHADI RIZKI", nilai: 60 },
-    "F1D02510067": { nama: "LALU MUHAMMAD IZZA ABDA MAULANA", nilai: 65 },
-    "F1D02510070": { nama: "M. PRADIFTA ARIZONA", nilai: 45 },
-    "F1D02510071": { nama: "MALIKAL HIRSYA ALFATORY", nilai: 55 },
-    "F1D02510072": { nama: "MAULANA ISNA ANDIKA", nilai: 40 },
-    "F1D02510076": { nama: "MOHAMMAD IVAN ANDITA", nilai: 60 },
-    "F1D02510082": { nama: "MUHAMMAD FEBRYAN SYACH FAHLEVI", nilai: 45 },
-    "F1D02510084": { nama: "MUHAMMAD SATRIA RAHMATUL ADHA", nilai: 50 },
-    "F1D02510087": { nama: "NISA AGNIA", nilai: 60 },
-    "F1D02510089": { nama: "RIFKA SALSABILA FUTRI", nilai: 90 },
-    "F1D02510096": { nama: "VIRGINIA SHERINA MARTHA PIRI", nilai: 80 },
-    "F1D02510097": { nama: "YARA DZAKIYATUL FITRIYAH", nilai: 50 },
-    "F1D02510100": { nama: "ZIDNY ILMA", nilai: 65 },
-    "F1D02510103": { nama: "AMANDA REZQUITA JAMILA", nilai: 80 },
-    "F1D02510108": { nama: "BIMA SATRIO KHOIRI ROMADHON", nilai: 50 },
-    "F1D02510109": { nama: "CHANDRA KUSUMA", nilai: 40 },
-    "F1D02510113": { nama: "FAUZAN ADHIM MUBARAK", nilai: 40 },
-    "F1D02510119": { nama: "LALU HELMI FIRDAUS", nilai: 50 },
-    "F1D02510120": { nama: "LALU M. SULTHAN AZMY", nilai: 40 },
-    "F1D02510125": { nama: "MUSHADDIK SYAKH AL KABIIRA", nilai: 20 },
-    "F1D02510128": { nama: "NATHAN CHRISTIAN LOILEWEN", nilai: 90 },
-    "F1D02511001": { nama: "Aijiazi Housaiyin", nilai: 45 }
+  const gradeData = {
+    "F1D022149":   { name: "NABILA AZKIYA ROSYIDA WIJAYANTI", score: 60 },
+    "F1D02310010": { name: "I NYOMAN SUDARSANA", score: 70 },
+    "F1D02310012": { name: "KHOLIQ MITRA RAHARJA", score: 55 },
+    "F1D02310024": { name: "ROMAN IBRAHIMA ARCHISAPPE CHARENI", score: 47 },
+    "F1D02310053": { name: "GIAN KAUSARI", score: 60 },
+    "F1D02310056": { name: "I MADE INDRA DWI PAYANA", score: 70 },
+    "F1D02310067": { name: "KEVIN MUAMMAR GATHFAN", score: 50 },
+    "F1D02310074": { name: "M. RIZKI JUNIARDI", score: 60 },
+    "F1D02510015": { name: "MICHEL ISKANDAR", score: 75 },
+    "F1D02510034": { name: "AGNI HUMAIRA", score: 45 },
+    "F1D02510038": { name: "ANAS AMRULLAH KHAERON", score: 50 },
+    "F1D02510040": { name: "AZZAHRA SHAFIRA RACHMAN", score: 60 },
+    "F1D02510043": { name: "BAYU KHALDUN ARDIANSYAH", score: 40 },
+    "F1D02510044": { name: "CAYLAZEFA GRACIA GETSEMANI ARIO", score: 70 },
+    "F1D02510047": { name: "DAHLIA WAHYUNI", score: 65 },
+    "F1D02510050": { name: "FAIZ GAIA NAJIB", score: 40 },
+    "F1D02510054": { name: "I GUSTI AGUNG AYU PRISILIA", score: 60 },
+    "F1D02510055": { name: "I KOMANG SATYA BAGUS TRIATNA", score: 70 },
+    "F1D02510061": { name: "JOVANKA KIARA REVALIN SEPTYAVANYA", score: 65 },
+    "F1D02510065": { name: "LALU AKHADI RIZKI", score: 60 },
+    "F1D02510067": { name: "LALU MUHAMMAD IZZA ABDA MAULANA", score: 65 },
+    "F1D02510070": { name: "M. PRADIFTA ARIZONA", score: 45 },
+    "F1D02510071": { name: "MALIKAL HIRSYA ALFATORY", score: 55 },
+    "F1D02510072": { name: "MAULANA ISNA ANDIKA", score: 40 },
+    "F1D02510076": { name: "MOHAMMAD IVAN ANDITA", score: 60 },
+    "F1D02510082": { name: "MUHAMMAD FEBRYAN SYACH FAHLEVI", score: 45 },
+    "F1D02510084": { name: "MUHAMMAD SATRIA RAHMATUL ADHA", score: 50 },
+    "F1D02510087": { name: "NISA AGNIA", score: 60 },
+    "F1D02510089": { name: "RIFKA SALSABILA FUTRI", score: 90 },
+    "F1D02510096": { name: "VIRGINIA SHERINA MARTHA PIRI", score: 80 },
+    "F1D02510097": { name: "YARA DZAKIYATUL FITRIYAH", score: 50 },
+    "F1D02510100": { name: "ZIDNY ILMA", score: 65 },
+    "F1D02510103": { name: "AMANDA REZQUITA JAMILA", score: 80 },
+    "F1D02510108": { name: "BIMA SATRIO KHOIRI ROMADHON", score: 50 },
+    "F1D02510109": { name: "CHANDRA KUSUMA", score: 40 },
+    "F1D02510113": { name: "FAUZAN ADHIM MUBARAK", score: 40 },
+    "F1D02510119": { name: "LALU HELMI FIRDAUS", score: 50 },
+    "F1D02510120": { name: "LALU M. SULTHAN AZMY", score: 40 },
+    "F1D02510125": { name: "MUSHADDIK SYAKH AL KABIIRA", score: 20 },
+    "F1D02510128": { name: "NATHAN CHRISTIAN LOILEWEN", score: 90 },
+    "F1D02511001": { name: "Aijiazi Housaiyin", score: 45 }
   };
 
-  function cekNilai() {
+  function checkGrade() {
     const nimInput = document.getElementById('nim').value.trim().toUpperCase();
     const resultDiv = document.getElementById('result');
     resultDiv.className = 'result';
 
     if (!nimInput) {
       resultDiv.classList.add('show', 'error');
-      resultDiv.innerHTML = '<div class="emoji">⚠️</div><div class="message">NIM tidak boleh kosong!</div>';
+      resultDiv.innerHTML = '<div class="emoji">⚠️</div><div class="message">Student ID cannot be empty!</div>';
       return;
     }
 
-    const data = dataNilai[nimInput];
+    const data = gradeData[nimInput];
 
     if (!data) {
       resultDiv.classList.add('show', 'error');
-      resultDiv.innerHTML = '<div class="emoji">❌</div><div class="message">NIM tidak ditemukan dalam data!</div>';
+      resultDiv.innerHTML = '<div class="emoji">❌</div><div class="message">Student ID not found in the records!</div>';
       return;
     }
 
-    if (data.nilai >= 65) {
-      resultDiv.classList.add('show', 'lulus');
+    if (data.score >= 65) {
+      resultDiv.classList.add('show', 'passed');
       resultDiv.innerHTML =
         '<div class="emoji">🎉</div>' +
-        '<div class="name">' + data.nama + '</div>' +
-        '<div class="nilai">' + data.nilai + '</div>' +
-        '<div class="message">Selamat, kamu tidak remed! 🎓</div>';
+        '<div class="name">' + data.name + '</div>' +
+        '<div class="score">' + data.score + '</div>' +
+        '<div class="message">Congratulations, you passed! 🎓</div>';
     } else {
-      resultDiv.classList.add('show', 'remed');
+      resultDiv.classList.add('show', 'failed');
       resultDiv.innerHTML =
         '<div class="emoji">😔</div>' +
-        '<div class="name">' + data.nama + '</div>' +
-        '<div class="nilai">' + data.nilai + '</div>' +
-        '<div class="message">Maaf, coba lagi yuk. Remed! 📚</div>';
+        '<div class="name">' + data.name + '</div>' +
+        '<div class="score">' + data.score + '</div>' +
+        '<div class="message">You did not pass. Keep trying! 📚</div>';
     }
   }
 
   document.getElementById('nim').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') cekNilai();
+    if (e.key === 'Enter') checkGrade();
   });
 </script>
 </body>
