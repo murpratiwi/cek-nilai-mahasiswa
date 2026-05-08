@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cek Nilai Mahasiswa</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -34,13 +33,13 @@
     display: block; color: #4a5568; font-weight: 600;
     margin-bottom: 8px; font-size: 14px;
   }
-  input {
+  input[type="text"] {
     width: 100%; padding: 14px 16px;
     border: 2px solid #e2e8f0; border-radius: 10px;
     font-size: 15px; transition: all 0.2s;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
-  input[type="text"] { text-transform: uppercase; letter-spacing: 0.5px; }
-  input:focus {
+  input[type="text"]:focus {
     outline: none; border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
   }
@@ -92,40 +91,11 @@
     background: #f7fafc; border-radius: 8px;
     font-size: 13px; color: #718096; text-align: center;
   }
-  .hidden { display: none; }
-  .lock-badge {
-    display: inline-block;
-    background: #38a169; color: #fff;
-    font-size: 12px; padding: 4px 10px;
-    border-radius: 20px; margin-bottom: 10px;
-  }
-  .error-msg {
-    color: #e53e3e; font-size: 13px;
-    margin-top: 8px; text-align: center;
-    min-height: 18px;
-  }
 </style>
 </head>
 <body>
-  <!-- Halaman Login Password -->
-  <div class="container" id="loginPage">
+  <div class="container">
     <div class="header">
-      <div class="icon">🔒</div>
-      <h1>Halaman Terkunci</h1>
-      <p class="subtitle">Masukkan password untuk mengakses data nilai</p>
-    </div>
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Masukkan password" autocomplete="off">
-    </div>
-    <button onclick="bukaKunci()">Buka 🔓</button>
-    <div class="error-msg" id="errorMsg"></div>
-  </div>
-
-  <!-- Halaman Cek Nilai (tersembunyi sampai password benar) -->
-  <div class="container hidden" id="mainPage">
-    <div class="header">
-      <span class="lock-badge">🔓 Terbuka</span>
       <div class="icon">📊</div>
       <h1>Cek Nilai Mahasiswa</h1>
       <p class="subtitle">Masukkan NIM untuk melihat hasil nilai Anda</p>
@@ -140,87 +110,49 @@
   </div>
 
 <script>
-  // ============================================
-  // DATA NILAI YANG SUDAH DIENKRIPSI
-  // Password: dosen2025
-  // ============================================
-  const encryptedData = "U2FsdGVkX1+ENKRIPSI_PLACEHOLDER";
-
-  let dataNilai = null;
-
-  // Fungsi untuk MEMBUAT enkripsi (jalankan sekali saja saat setup)
-  function generateEncryption(password) {
-    const data = {
-      "F1D022149":   { nama: "NABILA AZKIYA ROSYIDA WIJAYANTI", nilai: 60 },
-      "F1D02310010": { nama: "I NYOMAN SUDARSANA", nilai: 70 },
-      "F1D02310012": { nama: "KHOLIQ MITRA RAHARJA", nilai: 55 },
-      "F1D02310024": { nama: "ROMAN IBRAHIMA ARCHISAPPE CHARENI", nilai: 47 },
-      "F1D02310053": { nama: "GIAN KAUSARI", nilai: 60 },
-      "F1D02310056": { nama: "I MADE INDRA DWI PAYANA", nilai: 70 },
-      "F1D02310067": { nama: "KEVIN MUAMMAR GATHFAN", nilai: 50 },
-      "F1D02310074": { nama: "M. RIZKI JUNIARDI", nilai: 60 },
-      "F1D02510015": { nama: "MICHEL ISKANDAR", nilai: 75 },
-      "F1D02510034": { nama: "AGNI HUMAIRA", nilai: 45 },
-      "F1D02510038": { nama: "ANAS AMRULLAH KHAERON", nilai: 50 },
-      "F1D02510040": { nama: "AZZAHRA SHAFIRA RACHMAN", nilai: 60 },
-      "F1D02510043": { nama: "BAYU KHALDUN ARDIANSYAH", nilai: 40 },
-      "F1D02510044": { nama: "CAYLAZEFA GRACIA GETSEMANI ARIO", nilai: 70 },
-      "F1D02510047": { nama: "DAHLIA WAHYUNI", nilai: 65 },
-      "F1D02510050": { nama: "FAIZ GAIA NAJIB", nilai: 40 },
-      "F1D02510054": { nama: "I GUSTI AGUNG AYU PRISILIA", nilai: 60 },
-      "F1D02510055": { nama: "I KOMANG SATYA BAGUS TRIATNA", nilai: 70 },
-      "F1D02510061": { nama: "JOVANKA KIARA REVALIN SEPTYAVANYA", nilai: 65 },
-      "F1D02510065": { nama: "LALU AKHADI RIZKI", nilai: 60 },
-      "F1D02510067": { nama: "LALU MUHAMMAD IZZA ABDA MAULANA", nilai: 65 },
-      "F1D02510070": { nama: "M. PRADIFTA ARIZONA", nilai: 45 },
-      "F1D02510071": { nama: "MALIKAL HIRSYA ALFATORY", nilai: 55 },
-      "F1D02510072": { nama: "MAULANA ISNA ANDIKA", nilai: 40 },
-      "F1D02510076": { nama: "MOHAMMAD IVAN ANDITA", nilai: 60 },
-      "F1D02510082": { nama: "MUHAMMAD FEBRYAN SYACH FAHLEVI", nilai: 45 },
-      "F1D02510084": { nama: "MUHAMMAD SATRIA RAHMATUL ADHA", nilai: 50 },
-      "F1D02510087": { nama: "NISA AGNIA", nilai: 60 },
-      "F1D02510089": { nama: "RIFKA SALSABILA FUTRI", nilai: 90 },
-      "F1D02510096": { nama: "VIRGINIA SHERINA MARTHA PIRI", nilai: 80 },
-      "F1D02510097": { nama: "YARA DZAKIYATUL FITRIYAH", nilai: 50 },
-      "F1D02510100": { nama: "ZIDNY ILMA", nilai: 65 },
-      "F1D02510103": { nama: "AMANDA REZQUITA JAMILA", nilai: 80 },
-      "F1D02510108": { nama: "BIMA SATRIO KHOIRI ROMADHON", nilai: 50 },
-      "F1D02510109": { nama: "CHANDRA KUSUMA", nilai: 40 },
-      "F1D02510113": { nama: "FAUZAN ADHIM MUBARAK", nilai: 40 },
-      "F1D02510119": { nama: "LALU HELMI FIRDAUS", nilai: 50 },
-      "F1D02510120": { nama: "LALU M. SULTHAN AZMY", nilai: 40 },
-      "F1D02510125": { nama: "MUSHADDIK SYAKH AL KABIIRA", nilai: 20 },
-      "F1D02510128": { nama: "NATHAN CHRISTIAN LOILEWEN", nilai: 90 },
-      "F1D02511001": { nama: "Aijiazi Housaiyin", nilai: 45 }
-    };
-    return CryptoJS.AES.encrypt(JSON.stringify(data), password).toString();
-  }
-
-  function bukaKunci() {
-    const password = document.getElementById('password').value;
-    const errorMsg = document.getElementById('errorMsg');
-
-    if (!password) {
-      errorMsg.textContent = '⚠️ Password tidak boleh kosong';
-      return;
-    }
-
-    try {
-      const bytes = CryptoJS.AES.decrypt(encryptedData, password);
-      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
-      if (!decrypted) throw new Error('Password salah');
-
-      dataNilai = JSON.parse(decrypted);
-
-      // Sukses → tampilkan halaman utama
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('mainPage').classList.remove('hidden');
-    } catch (e) {
-      errorMsg.textContent = '❌ Password salah, silakan coba lagi';
-      document.getElementById('password').value = '';
-    }
-  }
+  const dataNilai = {
+    "F1D022149":   { nama: "NABILA AZKIYA ROSYIDA WIJAYANTI", nilai: 60 },
+    "F1D02310010": { nama: "I NYOMAN SUDARSANA", nilai: 70 },
+    "F1D02310012": { nama: "KHOLIQ MITRA RAHARJA", nilai: 55 },
+    "F1D02310024": { nama: "ROMAN IBRAHIMA ARCHISAPPE CHARENI", nilai: 47 },
+    "F1D02310053": { nama: "GIAN KAUSARI", nilai: 60 },
+    "F1D02310056": { nama: "I MADE INDRA DWI PAYANA", nilai: 70 },
+    "F1D02310067": { nama: "KEVIN MUAMMAR GATHFAN", nilai: 50 },
+    "F1D02310074": { nama: "M. RIZKI JUNIARDI", nilai: 60 },
+    "F1D02510015": { nama: "MICHEL ISKANDAR", nilai: 75 },
+    "F1D02510034": { nama: "AGNI HUMAIRA", nilai: 45 },
+    "F1D02510038": { nama: "ANAS AMRULLAH KHAERON", nilai: 50 },
+    "F1D02510040": { nama: "AZZAHRA SHAFIRA RACHMAN", nilai: 60 },
+    "F1D02510043": { nama: "BAYU KHALDUN ARDIANSYAH", nilai: 40 },
+    "F1D02510044": { nama: "CAYLAZEFA GRACIA GETSEMANI ARIO", nilai: 70 },
+    "F1D02510047": { nama: "DAHLIA WAHYUNI", nilai: 65 },
+    "F1D02510050": { nama: "FAIZ GAIA NAJIB", nilai: 40 },
+    "F1D02510054": { nama: "I GUSTI AGUNG AYU PRISILIA", nilai: 60 },
+    "F1D02510055": { nama: "I KOMANG SATYA BAGUS TRIATNA", nilai: 70 },
+    "F1D02510061": { nama: "JOVANKA KIARA REVALIN SEPTYAVANYA", nilai: 65 },
+    "F1D02510065": { nama: "LALU AKHADI RIZKI", nilai: 60 },
+    "F1D02510067": { nama: "LALU MUHAMMAD IZZA ABDA MAULANA", nilai: 65 },
+    "F1D02510070": { nama: "M. PRADIFTA ARIZONA", nilai: 45 },
+    "F1D02510071": { nama: "MALIKAL HIRSYA ALFATORY", nilai: 55 },
+    "F1D02510072": { nama: "MAULANA ISNA ANDIKA", nilai: 40 },
+    "F1D02510076": { nama: "MOHAMMAD IVAN ANDITA", nilai: 60 },
+    "F1D02510082": { nama: "MUHAMMAD FEBRYAN SYACH FAHLEVI", nilai: 45 },
+    "F1D02510084": { nama: "MUHAMMAD SATRIA RAHMATUL ADHA", nilai: 50 },
+    "F1D02510087": { nama: "NISA AGNIA", nilai: 60 },
+    "F1D02510089": { nama: "RIFKA SALSABILA FUTRI", nilai: 90 },
+    "F1D02510096": { nama: "VIRGINIA SHERINA MARTHA PIRI", nilai: 80 },
+    "F1D02510097": { nama: "YARA DZAKIYATUL FITRIYAH", nilai: 50 },
+    "F1D02510100": { nama: "ZIDNY ILMA", nilai: 65 },
+    "F1D02510103": { nama: "AMANDA REZQUITA JAMILA", nilai: 80 },
+    "F1D02510108": { nama: "BIMA SATRIO KHOIRI ROMADHON", nilai: 50 },
+    "F1D02510109": { nama: "CHANDRA KUSUMA", nilai: 40 },
+    "F1D02510113": { nama: "FAUZAN ADHIM MUBARAK", nilai: 40 },
+    "F1D02510119": { nama: "LALU HELMI FIRDAUS", nilai: 50 },
+    "F1D02510120": { nama: "LALU M. SULTHAN AZMY", nilai: 40 },
+    "F1D02510125": { nama: "MUSHADDIK SYAKH AL KABIIRA", nilai: 20 },
+    "F1D02510128": { nama: "NATHAN CHRISTIAN LOILEWEN", nilai: 90 },
+    "F1D02511001": { nama: "Aijiazi Housaiyin", nilai: 45 }
+  };
 
   function cekNilai() {
     const nimInput = document.getElementById('nim').value.trim().toUpperCase();
@@ -258,17 +190,9 @@
     }
   }
 
-  // Enter untuk submit
-  document.getElementById('password').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') bukaKunci();
-  });
   document.getElementById('nim').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') cekNilai();
   });
-
-  // === GENERATE ENKRIPSI (Hapus baris ini setelah dapat hasil enkripsi) ===
-  console.log("=== HASIL ENKRIPSI (Salin ke variabel encryptedData) ===");
-  console.log(generateEncryption("dosen2025"));
 </script>
 </body>
 </html>
