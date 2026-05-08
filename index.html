@@ -107,6 +107,7 @@
 </style>
 </head>
 <body>
+  <!-- Halaman Login Password -->
   <div class="container" id="loginPage">
     <div class="header">
       <div class="icon">🔒</div>
@@ -121,6 +122,7 @@
     <div class="error-msg" id="errorMsg"></div>
   </div>
 
+  <!-- Halaman Cek Nilai (tersembunyi sampai password benar) -->
   <div class="container hidden" id="mainPage">
     <div class="header">
       <span class="lock-badge">🔓 Terbuka</span>
@@ -138,13 +140,17 @@
   </div>
 
 <script>
-  // Data nilai dienkripsi otomatis di memory saat halaman dimuat
+  // ============================================
+  // DATA NILAI YANG SUDAH DIENKRIPSI
   // Password: dosen2025
-  let encryptedData = null;
+  // ============================================
+  const encryptedData = "U2FsdGVkX1+ENKRIPSI_PLACEHOLDER";
+
   let dataNilai = null;
 
-  (function init() {
-    const dataAsli = {
+  // Fungsi untuk MEMBUAT enkripsi (jalankan sekali saja saat setup)
+  function generateEncryption(password) {
+    const data = {
       "F1D022149":   { nama: "NABILA AZKIYA ROSYIDA WIJAYANTI", nilai: 60 },
       "F1D02310010": { nama: "I NYOMAN SUDARSANA", nilai: 70 },
       "F1D02310012": { nama: "KHOLIQ MITRA RAHARJA", nilai: 55 },
@@ -187,8 +193,8 @@
       "F1D02510128": { nama: "NATHAN CHRISTIAN LOILEWEN", nilai: 90 },
       "F1D02511001": { nama: "Aijiazi Housaiyin", nilai: 45 }
     };
-    encryptedData = CryptoJS.AES.encrypt(JSON.stringify(dataAsli), "dosen2025").toString();
-  })();
+    return CryptoJS.AES.encrypt(JSON.stringify(data), password).toString();
+  }
 
   function bukaKunci() {
     const password = document.getElementById('password').value;
@@ -202,12 +208,14 @@
     try {
       const bytes = CryptoJS.AES.decrypt(encryptedData, password);
       const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+
       if (!decrypted) throw new Error('Password salah');
 
       dataNilai = JSON.parse(decrypted);
+
+      // Sukses → tampilkan halaman utama
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('mainPage').classList.remove('hidden');
-      setTimeout(function() { document.getElementById('nim').focus(); }, 100);
     } catch (e) {
       errorMsg.textContent = '❌ Password salah, silakan coba lagi';
       document.getElementById('password').value = '';
@@ -250,12 +258,17 @@
     }
   }
 
+  // Enter untuk submit
   document.getElementById('password').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') bukaKunci();
   });
   document.getElementById('nim').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') cekNilai();
   });
+
+  // === GENERATE ENKRIPSI (Hapus baris ini setelah dapat hasil enkripsi) ===
+  console.log("=== HASIL ENKRIPSI (Salin ke variabel encryptedData) ===");
+  console.log(generateEncryption("dosen2025"));
 </script>
 </body>
 </html>
